@@ -4,9 +4,9 @@ layout: default
 
 # Projects
 
-[Hippify Art](./hippify-demo/hippify.html).
+[Hippify Art](./hippify-demo/hippify.html)
 
-[Times Popular](https://timespopular.herokuapp.com).
+[Times Popular](https://timespopular.herokuapp.com)
 
 * * *
 
