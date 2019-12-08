@@ -2,7 +2,7 @@
 layout: default
 ---
 
-#Projects
+# Projects
 
 [Hippify Project](./hippify-demo/hippify.html).
 
