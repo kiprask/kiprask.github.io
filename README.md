@@ -1,2 +1,2 @@
 # kiprask.github.io
- Project repositoru
+ Project repository
