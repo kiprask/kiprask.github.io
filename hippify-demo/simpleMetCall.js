@@ -1,5 +1,8 @@
-function MetCallURL(paintID){
-	var museumIDURL = "https://collectionapi.metmuseum.org/public/collection/v1/objects/" + paintID;
+var i = 0;
+
+var IDarray = [];
+function MetCallURL(IDs){
+	var museumIDURL = "https://collectionapi.metmuseum.org/public/collection/v1/objects/" + IDarray[0][i];
 	$.ajax ({
 		url: museumIDURL,
 		type: 'GET',
@@ -9,14 +12,21 @@ function MetCallURL(paintID){
 			console.log(err);
 		},
 		success: function (data){
-			console.log(data.primaryImage)
-			
+			if (data.objectName != "Painting")
+			{
+				i++;
+				MetCallURL(IDarray);
+			}
+				else{
+					console.log (i);
+					console.log (data.primaryImage);
+				}
 		}						
 	});
 }
 
 function MetCall(){
-	var museumURL = "https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&isHighlight=true&q=" + "sun";
+	var museumURL = "https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&isHighlight=true&q=" + "tokyo";
 	$.ajax ({
 		url: museumURL,
 		type: 'GET',
@@ -26,12 +36,14 @@ function MetCall(){
 			console.log(err);
 		},
 		success: function (data){
-			console.log(data.objectIDs[4])
-			MetCallURL (data.objectIDs[4]);
+			IDarray.push(data.objectIDs);
+			console.log(IDarray);
+			MetCallURL (IDarray);
 		}						
 	});
 }
 
 $(document).ready(function(){
+	console.log("document is ready");
 	MetCall();
 });
