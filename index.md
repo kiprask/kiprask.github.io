@@ -7,5 +7,6 @@ layout: default
 [Hippify Project](./hippify-demo/hippify.html).
 
 * * *
-#### More to come soon
+
+More to come soon
 
