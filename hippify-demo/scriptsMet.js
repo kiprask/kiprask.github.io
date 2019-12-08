@@ -32,7 +32,6 @@ function makeHTML (painting, snippet){
 }
 	console.log ("before first function");
 function paintingSearch(array, snippet, num) {
-	var museumAPIKey;
 	var museumSearchTerm = array[num];
 	var basicWords = ["the","a","you","me","and","I","The","A","You","Me","And","I","No","no","What","what","That","that","When","when","It's","it's"];
 	
@@ -50,7 +49,7 @@ function paintingSearch(array, snippet, num) {
 		}
 		else{
 			museumSearchTerm = array[num];
-			museumURL = "https://www.rijksmuseum.nl/api/en/collection/?key=v97KOgKJ&format=json&ps=1&type=painting&p=1&q=" + museumSearchTerm;
+			museumURL = "https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&isHighlight=true&q=" + museumSearchTerm;
 		}
 	}
 
@@ -72,28 +71,44 @@ function paintingSearch(array, snippet, num) {
 		},
 		success: function (data){
 			//if the painting can't be found using the non-basic term, search it using the next term
-			if (data.count === 0){
+			if (data.total === 0){
 				num++;
 				paintingSearch(array, snippet,num);
 
 			}
 			else{
-			var paintingURL = data.artObjects[0].webImage.url;
-			var paintingHeight = (data.artObjects[0].webImage.height/3) + "px";
-			var paintingWidth = data.artObjects[0].webImage.width + "px";
-			var upperCaseSnippet = snippet.toUpperCase();
-			var noCommasSnippet = upperCaseSnippet.replace (/\,/g,"<br>");
-			var noDotSnippet = noCommasSnippet.replace(/\./g,"");
-			makeHTML (paintingURL, noDotSnippet);
-			console.log(num);
-			console.log(museumSearchTerm);
-			console.log(museumURL);
-			console.log("painting loaded");
+				var paintID=1;
+				museumIDURL = "https://collectionapi.metmuseum.org/public/collection/v1/objects/" + data.objectIDs[paintID];
+
+					$.ajax ({
+						url: museumURL,
+						type: 'GET',
+						dataType: 'json',
+						error: function (err) {
+							console.log ("we got problems!!!");
+							console.log(err);
+						},
+						success: function (data){
+							//if the painting can't be found using the non-basic term, search it using the next term
+							if (data.objectName/= "Painting"){
+								paintID++;
+								paintingSearch(array, snippet,num);
+								}
+								else{
+
+									var paintingURL = data.primaryImage;
+									var upperCaseSnippet = snippet.toUpperCase();
+									var noCommasSnippet = upperCaseSnippet.replace (/\,/g,"<br>");
+									var noDotSnippet = noCommasSnippet.replace(/\./g,"");
+									makeHTML (paintingURL, noDotSnippet);
+									console.log(num);
+									console.log(museumSearchTerm);
+									console.log(museumURL);
+									console.log("painting loaded");
+									}
+						}
+					});
 			}
-		}
-	}
-	);
-}
 
 
 
