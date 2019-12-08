@@ -4,7 +4,7 @@ layout: default
 
 # Projects
 
-[Hippify Project](./hippify-demo/hippify.html).
+[Hippify Art](./hippify-demo/hippify.html).
 
 * * *
 
