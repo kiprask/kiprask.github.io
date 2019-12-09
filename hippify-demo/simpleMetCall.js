@@ -1,7 +1,7 @@
 var i = 0;
 
 var IDarray = [];
-function MetCallURL(IDs){
+function MetCallURL(IDarray){
 	var museumIDURL = "https://collectionapi.metmuseum.org/public/collection/v1/objects/" + IDarray[0][i];
 	$.ajax ({
 		url: museumIDURL,

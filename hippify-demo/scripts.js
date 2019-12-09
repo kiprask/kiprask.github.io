@@ -9,6 +9,7 @@ var id = 0;
 var musixmatchSnippetURL = mainmusixmatchURL + "track.snippet.get?track_id=" + id + musixmatchAPIKey + "&format=jsonp";
 var topTracksURL = mainmusixmatchURL + "chart.tracks.get?chart_name=top&page=1&page_size=5&country=us&f_has_lyrics=1" + musixmatchAPIKey + "&format=jsonp";
 console.log(topTracksURL);
+var arrayNum = 0;
 
 //function that puts the painting on the webpage
 
@@ -49,8 +50,9 @@ function paintingSearch(array, snippet, num) {
 			checkTheWords();
 		}
 		else{
-			museumSearchTerm = array[num];
-			museumURL = "https://www.rijksmuseum.nl/api/en/collection/?key=v97KOgKJ&format=json&ps=1&type=painting&p=1&q=" + museumSearchTerm;
+			museumSearchTerm = array[num].replace ("'","");
+			var museumURL = "https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=" + museumSearchTerm;
+			MetCall(museumURL, arrayNum);
 		}
 	}
 
@@ -60,8 +62,53 @@ function paintingSearch(array, snippet, num) {
 	checkTheWords();
 
 	console.log ("after second function");
-	
 
+
+
+var i = 0;
+
+var IDarray = [];
+function MetCallURL(IDarray,arrayNum){
+	console.log(arrayNum);
+	var museumIDURL = "https://collectionapi.metmuseum.org/public/collection/v1/objects/" + IDarray[arrayNum][i];
+	console.log(museumIDURL);
+	$.ajax ({
+		url: museumIDURL,
+		type: 'GET',
+		dataType: 'json',
+		error: function (err) {
+			console.log ("we got problems!!!");
+			console.log(err);
+		},
+		success: function (data){
+			if (data.objectName != "Painting")
+			{
+				i++;
+				MetCallURL(IDarray, arrayNum);
+			}
+				else{
+					console.log (i);
+					console.log (data.primaryImage);
+					var paintingURL = data.primaryImage;
+					var upperCaseSnippet = snippet.toUpperCase();
+					var noCommasSnippet = upperCaseSnippet.replace (/\,/g,"<br>");
+					var noDotSnippet = noCommasSnippet.replace(/\./g,"");
+					makeHTML (paintingURL, noDotSnippet);
+					console.log(num);
+					console.log(museumSearchTerm);
+					console.log(museumIDURL);
+					console.log("painting loaded");
+				}
+		}						
+	});
+}
+
+
+
+function MetCall(museumURL, arrayNum){
+
+	
+	
 	$.ajax ({
 		url: museumURL,
 		type: 'GET',
@@ -71,28 +118,24 @@ function paintingSearch(array, snippet, num) {
 			console.log(err);
 		},
 		success: function (data){
-			//if the painting can't be found using the non-basic term, search it using the next term
-			if (data.count === 0){
-				num++;
-				paintingSearch(array, snippet,num);
+			IDarray.push(data.objectIDs);
+			console.log(IDarray);
+			if (IDarray==0){
+				var museumURL = "https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&isHighlight=true&q=" + "box";
+				arrayNum = 1;
+				MetCall(museumURL, arrayNum);
+
+				
 
 			}
 			else{
-			var paintingURL = data.artObjects[0].webImage.url;
-			var paintingHeight = (data.artObjects[0].webImage.height/3) + "px";
-			var paintingWidth = data.artObjects[0].webImage.width + "px";
-			var upperCaseSnippet = snippet.toUpperCase();
-			var noCommasSnippet = upperCaseSnippet.replace (/\,/g,"<br>");
-			var noDotSnippet = noCommasSnippet.replace(/\./g,"");
-			makeHTML (paintingURL, noDotSnippet);
-			console.log(num);
-			console.log(museumSearchTerm);
-			console.log(museumURL);
-			console.log("painting loaded");
+			MetCallURL (IDarray, arrayNum);
+			console.log (arrayNum);
+			
 			}
-		}
-	}
-	);
+		}						
+	});
+}
 }
 
 
