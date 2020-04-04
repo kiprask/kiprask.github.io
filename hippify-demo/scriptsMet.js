@@ -189,4 +189,3 @@ $(document).ready(function(){
 		musixmatchSearch (trackNameURLInput, artistNameURLInput);	
 	});
 });
-
