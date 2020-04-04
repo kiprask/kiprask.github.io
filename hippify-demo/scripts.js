@@ -9,14 +9,12 @@ var id = 0;
 var musixmatchSnippetURL = mainmusixmatchURL + "track.snippet.get?track_id=" + id + musixmatchAPIKey + "&format=jsonp";
 var topTracksURL = mainmusixmatchURL + "chart.tracks.get?chart_name=top&page=1&page_size=5&country=us&f_has_lyrics=1" + musixmatchAPIKey + "&format=jsonp";
 console.log(topTracksURL);
-var arrayNum = 0;
 
 //function that puts the painting on the webpage
 
 function makeHTML (painting, snippet){
 	var imagePainting = "";
-	imagePainting += "<div class='artwork'>";
-	imagePainting += "<img class='painting' id='lowerHeight' src='" + painting + "'/>";
+	imagePainting += "<div class='artwork'"+ "style='background-image: url("+ painting +"); background-size: cover; background-repeat: no-repeat;'>";
 	imagePainting += "<div class='phrase'>" + snippet + "</div>";
 	imagePainting += "</div>";
 	
@@ -36,7 +34,7 @@ function paintingSearch(array, snippet, num) {
 	var museumAPIKey;
 	var museumSearchTerm = array[num];
 	var basicWords = ["the","a","you","me","and","I","The","A","You","Me","And","I","No","no","What","what","That","that","When","when","It's","it's"];
-	
+	console.log ("in first function");
 	var museumURL;
 	function checkTheWords(){
 		var tryAgain = false;
@@ -50,9 +48,8 @@ function paintingSearch(array, snippet, num) {
 			checkTheWords();
 		}
 		else{
-			museumSearchTerm = array[num].replace ("'","");
-			var museumURL = "https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&q=" + museumSearchTerm;
-			MetCall(museumURL, arrayNum);
+			museumSearchTerm = array[num];
+			museumURL = "https://www.rijksmuseum.nl/api/en/collection/?key=v97KOgKJ&format=json&ps=1&type=painting&p=1&q=" + museumSearchTerm;
 		}
 	}
 
@@ -62,53 +59,8 @@ function paintingSearch(array, snippet, num) {
 	checkTheWords();
 
 	console.log ("after second function");
-
-
-
-var i = 0;
-
-var IDarray = [];
-function MetCallURL(IDarray,arrayNum){
-	console.log(arrayNum);
-	var museumIDURL = "https://collectionapi.metmuseum.org/public/collection/v1/objects/" + IDarray[arrayNum][i];
-	console.log(museumIDURL);
-	$.ajax ({
-		url: museumIDURL,
-		type: 'GET',
-		dataType: 'json',
-		error: function (err) {
-			console.log ("we got problems!!!");
-			console.log(err);
-		},
-		success: function (data){
-			if (data.objectName != "Painting")
-			{
-				i++;
-				MetCallURL(IDarray, arrayNum);
-			}
-				else{
-					console.log (i);
-					console.log (data.primaryImage);
-					var paintingURL = data.primaryImage;
-					var upperCaseSnippet = snippet.toUpperCase();
-					var noCommasSnippet = upperCaseSnippet.replace (/\,/g,"<br>");
-					var noDotSnippet = noCommasSnippet.replace(/\./g,"");
-					makeHTML (paintingURL, noDotSnippet);
-					console.log(num);
-					console.log(museumSearchTerm);
-					console.log(museumIDURL);
-					console.log("painting loaded");
-				}
-		}						
-	});
-}
-
-
-
-function MetCall(museumURL, arrayNum){
-
 	
-	
+
 	$.ajax ({
 		url: museumURL,
 		type: 'GET',
@@ -118,24 +70,27 @@ function MetCall(museumURL, arrayNum){
 			console.log(err);
 		},
 		success: function (data){
-			IDarray.push(data.objectIDs);
-			console.log(IDarray);
-			if (IDarray==0){
-				var museumURL = "https://collectionapi.metmuseum.org/public/collection/v1/search?hasImages=true&isHighlight=true&q=" + "box";
-				arrayNum = 1;
-				MetCall(museumURL, arrayNum);
-
-				
+			//if the painting can't be found using the non-basic term, search it using the next term
+			if (data.count === 0){
+				num++;
+				paintingSearch(array, snippet,num);
 
 			}
 			else{
-			MetCallURL (IDarray, arrayNum);
-			console.log (arrayNum);
-			
+			var paintingURL = data.artObjects[0].webImage.url;
+			var paintingHeight = (data.artObjects[0].webImage.height/3) + "px";
+			var paintingWidth = data.artObjects[0].webImage.width + "px";
+			var upperCaseSnippet = snippet.toUpperCase();
+			var noCommasSnippet = upperCaseSnippet.replace (/\,/g,"<br>");
+			var noDotSnippet = noCommasSnippet.replace(/\./g,"");
+			makeHTML (paintingURL, noDotSnippet);
+			console.log(num);
+			console.log(museumSearchTerm);
+			console.log(museumURL);
+			console.log("painting loaded");
 			}
-		}						
+		}
 	});
-}
 }
 
 
@@ -171,9 +126,13 @@ function musixmatchSnippet (id) {
 
 //function to get musixmatch search data
 function musixmatchSearch (track, artist) {
+
+	console.log("after click");
 	
 	var musixmatchSearchURL = mainmusixmatchURL + "track.search?q_track=" + track + "&q_artist=" + artist + 
 	musixmatchAPIKey + "&format=jsonp";
+
+	console.log(musixmatchSearchURL);
 	
 	$.ajax({
 		url:musixmatchSearchURL,
@@ -184,6 +143,8 @@ function musixmatchSearch (track, artist) {
 			console.log (err);
 		},
 		success: function(data){
+
+			console.log("after search");
 			
 			if(data.message.header.available === 0){
 				alert ("This track does not exist!!!");
@@ -204,16 +165,23 @@ function musixmatchSearch (track, artist) {
 //document ready function
 $(document).ready(function(){
 
-	$('#theButton').click( function(){
+
+
+	$('#submit').click( function(){
 		//Do this stuff when a click occurs
+		
 		var trackName = $('#trackInput').val();
-		var trackNameURLInput = escape(trackName);
-		console.log ("button is pressed");
+		var trackNameURLInput = trackName;
 
 		var artistName = $('#artistInput').val();
-		var artistNameURLInput = escape(artistName);
+		var artistNameURLInput = artistName;
 
+		
+		console.log ("click happened");
 		//running track search function which finds the track id and executes the snippet function which logs the snippet
-		musixmatchSearch (trackNameURLInput, artistNameURLInput);	
+		musixmatchSearch (trackNameURLInput, artistNameURLInput);
+
+	
 	});
 });
+
